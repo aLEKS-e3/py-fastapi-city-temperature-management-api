@@ -10,6 +10,7 @@ from temperature import schemas
 from city.models import City
 from temperature.models import Temperature
 
+
 load_dotenv()
 
 API_KEY = os.environ.get("API_KEY")
@@ -33,7 +34,7 @@ def get_temperature_records_for_city(
     return db.query(Temperature).filter_by(city_id=city_id).all()
 
 
-async def update_temperature_record(city: City, db: Session) -> None:
+def update_temperature_record(city: City, db: Session) -> None:
     response = requests.get(
         URL,
         params={

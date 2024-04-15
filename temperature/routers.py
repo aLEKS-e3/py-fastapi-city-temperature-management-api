@@ -4,6 +4,7 @@ from city.crud import get_all_cities
 from dependencies import CommonSession
 from temperature import crud, schemas
 
+
 router = APIRouter()
 
 

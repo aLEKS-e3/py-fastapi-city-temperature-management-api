@@ -4,6 +4,7 @@ from city.models import City
 from city import schemas, crud
 from dependencies import CommonSession
 
+
 router = APIRouter()
 
 
