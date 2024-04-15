@@ -12,7 +12,7 @@ def get_all_cities(db: Session) -> List[City]:
 
 
 def create_city(db: Session, city: CityCreate) -> City:
-    db_city = City(**city.dict())
+    db_city = City(**city.model_dump())
     db.add(db_city)
     db.commit()
     db.refresh(db_city)
@@ -40,7 +40,7 @@ def update_city(
         existing_city: City,
         city_to_update: CityCreate
 ) -> City:
-    for key, value in city_to_update.dict().items():
+    for key, value in city_to_update.model_dump().items():
         setattr(existing_city, key, value)
 
     db.add(existing_city)
