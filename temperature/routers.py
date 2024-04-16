@@ -9,18 +9,24 @@ router = APIRouter()
 
 
 @router.get("/temperatures", response_model=list[schemas.TemperatureList])
-def get_temperatures(
+async def get_temperatures(
         db: CommonSession,
         city_id: int | None = None
 ) -> list[schemas.TemperatureList]:
-    return crud.get_all_temperature_records(city_id, db)
+    if city_id:
+        return await crud.get_temperature_records_for_city(
+            db=db,
+            city_id=city_id
+        )
+
+    return await crud.get_all_temperature_records(db)
 
 
 @router.post("/temperatures/update")
-def update_temperatures(db: CommonSession) -> dict:
-    cities = get_all_cities(db)
+async def update_temperatures(db: CommonSession) -> dict:
+    cities = await get_all_cities(db)
 
     for city in cities:
-        crud.update_temperature_record(city, db)
+        await crud.update_temperature_record(city, db)
 
     return {"message": "success"}

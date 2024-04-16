@@ -1,27 +1,37 @@
 from typing import List
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
 from city.schemas import CityCreate
 from city.models import City
 
 
-def get_all_cities(db: Session) -> List[City]:
-    return db.query(City).all()
+async def get_all_cities(db: AsyncSession) -> List[City]:
+    query = select(City)
+    cities = await db.execute(query)
+
+    return [city[0] for city in cities.fetchall()]
 
 
-def create_city(db: Session, city: CityCreate) -> City:
-    db_city = City(**city.model_dump())
+async def create_city(db: AsyncSession, city: CityCreate) -> dict:
+    db_city = City(
+        name=city.name,
+        additional_info=city.additional_info
+    )
     db.add(db_city)
-    db.commit()
-    db.refresh(db_city)
+    await db.commit()
+    await db.refresh(db_city)
 
     return db_city
 
 
-def get_city_by_id(db: Session, city_id: int) -> City:
-    if city := db.query(City).filter_by(id=city_id).first():
+async def get_city_by_id(db: AsyncSession, city_id: int) -> City:
+    query = select(City).filter(City.id == city_id)
+    result = await db.execute(query)
+
+    if city := result.scalars().first():
         return city
 
     raise HTTPException(
@@ -30,21 +40,20 @@ def get_city_by_id(db: Session, city_id: int) -> City:
     )
 
 
-def delete_city(city: City, db: Session) -> None:
-    db.delete(city)
-    db.commit()
+async def delete_city(city: City, db: AsyncSession) -> None:
+    await db.delete(city)
+    await db.commit()
 
 
-def update_city(
-        db: Session,
+async def update_city(
+        db: AsyncSession,
         existing_city: City,
         city_to_update: CityCreate
 ) -> City:
     for key, value in city_to_update.model_dump().items():
         setattr(existing_city, key, value)
 
-    db.add(existing_city)
-    db.commit()
-    db.refresh(existing_city)
+    await db.commit()
+    await db.refresh(existing_city)
 
     return existing_city
