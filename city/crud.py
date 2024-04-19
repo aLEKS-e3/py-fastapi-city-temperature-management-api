@@ -6,6 +6,7 @@ from fastapi import HTTPException
 
 from city.schemas import CityCreate
 from city.models import City
+from dependencies import CommonSession
 
 
 async def get_all_cities(db: AsyncSession) -> List[City]:
@@ -38,6 +39,12 @@ async def get_city_by_id(db: AsyncSession, city_id: int) -> City:
         status_code=404,
         detail="City not found",
     )
+
+
+async def get_city_by_name(name: str, db: CommonSession):
+    query = select(City).filter(City.name == name)
+    result = await db.execute(query)
+    return result.scalars().first()
 
 
 async def delete_city(city: City, db: AsyncSession) -> None:
